@@ -1,0 +1,30 @@
+modLoader = "javafml" #mandatory
+loaderVersion = "[37,)" #mandatory
+issueTrackerURL = "https://github.com/tophatcats-mods/no-creeper-block-damage/issues"
+license = "MIT"
+
+[[mods]]
+
+modId = "nocreeperblockdamage"
+version = "${file.jarVersion}"
+displayName = "No Creeper Block Damage"
+
+displayURL = "https://github.com/tophatcats-mods/no-creeper-block-damage" #optional
+#logoFile=""
+credits = "KiriCattus"
+authors = "KiriCattus"
+description = "Block Creepers from damaging blocks. No more ugly Creeper holes!"
+
+[[dependencies.nocreeperblockdamage]] #optionaló
+modId = "forge"
+mandatory = true
+versionRange = "[37,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.nocreeperblockdamage]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.17.1]"
+ordering = "NONE"
+side = "BOTH"
