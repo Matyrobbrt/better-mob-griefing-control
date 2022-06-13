@@ -1,207 +1,220 @@
-import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import com.diluv.schoomp.Webhook
+import com.diluv.schoomp.message.Message
+import com.diluv.schoomp.message.embed.Embed
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
 
 buildscript {
     repositories {
-        maven {
-            name = 'Minecraft Forge Maven'
-            url = 'https://maven.minecraftforge.net'
-        }
-        maven {
-            name = 'Gradle Plugin Central'
-            url = 'https://plugins.gradle.org/m2/'
-        }
-        maven {
-            name = 'SpongePowered Maven'
-            url = 'https://repo.spongepowered.org/repository/maven-public'
-        }
         mavenCentral()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT'
-        classpath group: 'net.darkhax.curseforgegradle', name: 'CurseForgeGradle', version: '1.0.10'
-        classpath group: 'net.darkhax.tweedle', name: 'Tweedle', version: '1.0.5'
+        classpath("com.diluv.schoomp:Schoomp:1.2.6")
     }
 }
 
 plugins {
+    id 'eclipse'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '5.1.+'
     id 'org.cadixdev.licenser' version '0.6.1'
+    id 'net.darkhax.curseforgegradle' version '1.0.11'
 }
 
-apply plugin: 'java'
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'maven-publish'
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-java.withSourcesJar()
-java.withJavadocJar()
-
-// Disables Gradle's custom module metadata from being published to maven. The
-// metadata includes mapped dependencies which are not reasonably consumable by
-// other mod developers.
-tasks.withType(GenerateModuleMetadata) {
-    enabled = false
-}
-
+version = "${mod_version}"
+group = "${mod_group}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "${mod_name}-Forge-${minecraft_version}"
 
+// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
+    // The mappings can be changed at any time and must be in the following format.
+    // Channel:   Version:
+    // official   MCVersion             Official field/method names from Mojang mapping files
+    // parchment  YYYY.MM.DD-MCVersion  Open community-sourced parameter names and javadocs layered on top of official
+    //
+    // You must be aware of the Mojang license when using the 'official' or 'parchment' mappings.
+    // See more information here: https://github.com/MinecraftForge/MCPConfig/blob/master/Mojang.md
+    //
+    // Parchment is an unofficial project maintained by ParchmentMC, separate from MinecraftForge
+    // Additional setup is needed to use their mappings: https://github.com/ParchmentMC/Parchment/wiki/Getting-Started
+    //
+    // Use non-default mappings at your own risk. They may not always work.
+    // Simply re-run your setup task after changing the mappings to update your workspace.
     mappings channel: 'official', version: minecraft_version
 
-    if (project.hasProperty('forge_ats_enabled') && project.findProperty('forge_ats_enabled').toBoolean()) {
-        // This location is hardcoded in Forge and can not be changed.
-        // https://github.com/MinecraftForge/MinecraftForge/blob/be1698bb1554f9c8fa2f58e32b9ab70bc4385e60/fmlloader/src/main/java/net/minecraftforge/fml/loading/moddiscovery/ModFile.java#L123
-        accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-        project.logger.debug('Forge Access Transformers are enabled for this project.')
+    if (project.forge_ats_enabled) {
+        accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
+        project.logger.debug("Forge Access Transformers are enabled for the project ${mod_name}.")
     }
-
+    // Default run configurations.
+    // These can be tweaked, removed, or duplicated as needed.
     runs {
         client {
             workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Client'
-            if (project.hasProperty('mixin_enable')) {
-                arg "-mixin.config=${mod_id}.mixins.json"
-                property 'mixin.env.remapRefMap', 'true'
-                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            }
-            mods {
-                modClientRun {
-                    source sourceSets.main
-                }
-            }
+
+            // Recommended logging data for a userdev environment
+            // The markers can be added/remove as needed separated by commas.
+            // "SCAN": For mods scan.
+            // "REGISTRIES": For firing of registry events.
+            // "REGISTRYDUMP": For getting the contents of all registries.
+            property 'forge.logging.markers', 'REGISTRIES'
+
+            // Recommended logging level for the console
+            // You can set various levels here.
+            // Please read: https://stackoverflow.com/questions/2031163/when-to-use-the-different-log-levels
+            property 'forge.logging.console.level', 'debug'
+
+            // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
+            property 'forge.enabledGameTestNamespaces', mod_id
+
+            mods.create("${mod_id}").source(sourceSets.main)
         }
 
         server {
             workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
-            taskName 'Server'
-            if (project.hasProperty('mixin_enable')) {
-                arg "-mixin.config=${mod_id}.mixins.json"
-                property 'mixin.env.remapRefMap', 'true'
-                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            }
-            mods {
-                modServerRun {
-                    source sourceSets.main
-                }
-            }
+
+            property 'forge.logging.markers', 'REGISTRIES'
+
+            property 'forge.logging.console.level', 'debug'
+
+            args '--singleplayer', "yes", '--nogui', "true"
+
+            property 'forge.enabledGameTestNamespaces', mod_id
+
+            mods.create("${mod_id}").source(sourceSets.main)
+        }
+
+        // This run config launches GameTestServer and runs all registered gametests, then exits.
+        // By default, the server will crash when no gametests are provided.
+        // The gametest system is also enabled by default for other run configs under the /test command.
+        gameTestServer {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+
+            property 'forge.logging.console.level', 'debug'
+
+            args '--singleplayer', "yes", '--nogui', "true"
+
+            property 'forge.enabledGameTestNamespaces', mod_id
+
+            mods.create("${mod_id}").source(sourceSets.main)
         }
 
         data {
             workingDirectory project.file('run')
-            ideaModule "${rootProject.name}.${project.name}.main"
+
+            property 'forge.logging.markers', 'REGISTRIES'
+
+            property 'forge.logging.console.level', 'debug'
+
+            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
             args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-            taskName 'Data'
-            if (project.hasProperty('mixin_enable')) {
-                arg "-mixin.config=${mod_id}.mixins.json"
-                property 'mixin.env.remapRefMap', 'true'
-                property 'mixin.env.refMapRemappingFile', "${projectDir}/build/createSrgToMcp/output.srg"
-            }
-            mods {
-                modDataRun {
-                    source sourceSets.main
-                }
-            }
+
+            mods.create("${mod_id}").source(sourceSets.main)
         }
     }
 }
 
-sourceSets.main.resources.srcDir 'src/generated/resources'
+// Include resources generated by data generators.
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 
-// Enable Mixins
-if (project.hasProperty('mixin_enable')) {
-    project.ext.mixin_enabled = project.file("src/main/resources/${mod_id}.mixins.json").exists()
-    project.logger.lifecycle("Mixin ${project.ext.mixin_enabled ? 'enabled' : 'disabled'} for project ${project.name}.")
+repositories {
+    // Put repositories for dependencies here
+    // ForgeGradle automatically adds the Forge maven and Maven Central for you
+
+    // If you have mod jar dependencies in ./libs, you can declare them as a repository like so:
+    // flatDir {
+    //     dir 'libs'
+    // }
 }
 
 dependencies {
+    // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
+    // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
+    // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation fg.deobf("mezz.jei:jei-${minecraft_version}:${jei_version}")
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+
+    // Real mod deobf dependency examples - these get remapped to your current mappings
+    // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
+    // runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}") // Adds the full JEI mod as a runtime dependency
+    // implementation fg.deobf("com.tterrag.registrate:Registrate:MC${mc_version}-${registrate_version}") // Adds registrate as a dependency
+
+    // Examples using mod jars from ./libs
+    // implementation fg.deobf("blank:coolmod-${mc_version}:${coolmod_version}")
+
+    // For more info...
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
 }
 
 processResources {
     def buildProps = project.properties.clone()
 
-    // Replaces FML's magic file.jarVersion string with the correct version at
-    // build time.
-    buildProps.put('file', [jarVersion: project.version])
+    // Replaces FML's magic file.jarVersion string with the correct version at build time.
+    buildProps.put('file', [jarVersion: mod_version])
 
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand buildProps
     }
-
-    if (project.hasProperty('mixin_enable')) {
-        filesMatching(["${mod_id}.mixins.json".toString()]) {
-            expand buildProps
-        }
-    }
 }
 
-jar.finalizedBy('reobfJar')
-
-if (project.hasProperty('mixin_enable')) {
-    apply plugin: 'org.spongepowered.mixin'
-    mixin {
-        // Tells the mixin plugin where to put the generated refmap file.
-        add sourceSets.main, "${mod_id}.refmap.json"
-    }
-}
+var manifestAttributes = [
+        "Specification-Title"      : mod_name,
+        "Specification-Vendor"     : mod_author,
+        "Specification-Version"    : "1", // We are version 1 of ourselves
+        "Implementation-Title"     : mod_name,
+        "Implementation-Version"   : project.jar.archiveVersion,
+        "Implementation-Vendor"    : mod_author,
+        "Implementation-Timestamp" : new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+        "Built-On-Java"            : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})",
+        "Build-On-Minecraft"       : minecraft_version
+]
 
 jar {
-    manifest {
-        if (project.hasProperty('mixin_enable')) {
-            attributes('MixinConfigs' : "${mod_id}.mixins.json")
+    from("LICENSE.txt") {
+        rename {
+            "LICENSE_${archiveBaseName.get()}"
         }
-        attributes([
-                'Specification-Title'     : mod_name,
-                'Specification-Vendor'    : mod_author,
-                'Specification-Version'   : project.jar.archiveVersion,
-                'Implementation-Title'    : project.name,
-                'Implementation-Version'  : project.jar.archiveVersion,
-                'Implementation-Vendor'   : mod_author,
-                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                'Timestampe'              : System.currentTimeMillis(),
-                'Built-On-Java'           : "${System.getProperty('java.vm.version')} (${System.getProperty('java.vm.vendor')})",
-                'Build-On-Minecraft'      : minecraft_version
-        ])
+
+        manifest.attributes(manifestAttributes)
+        includeEmptyDirs false
+        preserveFileTimestamps = false
+        reproducibleFileOrder = true
     }
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        name = 'Sponge / Mixin'
-        url = 'https://repo.spongepowered.org/repository/maven-public/'
+// Example configuration to allow publishing using the maven-publish plugin
+// This is the preferred method to reobfuscate your jar file
+jar.finalizedBy('reobfJar')
+// However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
+// publish.dependsOn('reobfJar')
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact jar
+        }
     }
-    maven {
-        name = 'Mod Menu'
-        url = 'https://maven.terraformersmc.com/releases/'
-    }
-    maven {
-        name = 'Progwm16 / JEI'
-        url = 'https://dvs1.progwml6.com/files/maven'
-    }
-    maven {
-        name = 'Shedaniel / REI'
-        url = 'https://maven.shedaniel.me'
+    repositories {
+        maven {
+            url "file://${project.projectDir}/mcmodsrepo"
+        }
     }
 }
-
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = 'UTF-8'
-    it.options.release = 17
+    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
 
-// Disables Gradle's custom module metadata from being published to maven. The
-// metadata includes mapped dependencies which are not reasonably consumable by
-// other mod developers.
-tasks.withType(GenerateModuleMetadata) {
-    enabled = false
-}
+final var actualDateTime = OffsetDateTime.now(ZoneOffset.UTC).withNano(0)
 
 license {
+    ignoreFailures = false
     header = project.file('LicenseHeader.md')
     include '**/*.java'
     include '**/*.kt'
@@ -209,30 +222,53 @@ license {
     exclude '**/module-info.java'
     newLine = false
     properties {
-        year = currentCopyrightYear()
-        source = project.mod_source
-        name = project.mod_name
+        year = actualDateTime.getYear()
+        name = mod_name
+        source = mod_source
+        author = mod_author
     }
 }
 
-static def currentCopyrightYear() {
-    def dateFormat = new SimpleDateFormat('yyyy')
-    dateFormat.setTimeZone(TimeZone.getTimeZone('UTC'))
-    return dateFormat.format(new Date())
+task publishToCurseForge(type: TaskPublishCurseForge) {
+    apiToken = curseforge_api_token ?: "invalid/no CurseForge API token found!"
+
+    def mainFile = upload(curseforge_project_id, file("${project.buildDir}/libs/${archivesBaseName}-${version}.jar"))
+
+    mainFile.displayName = "${archivesBaseName}-${version}"
+    mainFile.releaseType = curseforge_release_type
+    mainFile.addModLoader(curseforge_mod_loader)
+    mainFile.addGameVersion(minecraft_version)
+    mainFile.addJavaVersion(curseforge_java_version)
+
+    //mainFile.addRequirement('fabric-api') //Fabric API slug
+    //mainFile.addEmbedded('cloth-config') //Cloth Config slug
+    mainFile.changelog = mod_changelog_url
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            groupId project.group
-            artifactId project.archivesBaseName
-            version project.version
-            artifact jar
-        }
+tasks.publishToCurseForge.dependsOn(tasks.assemble)
+
+if (discord_webhook) {
+    tasks.publish.dependsOn(tasks.publishToCurseForge)
+}
+
+tasks.getByName("publishToCurseForge").doLast {
+    try {
+        def webhook = new Webhook(discord_webhook, "${mod_name} Gradle Upload");
+
+        def message = new Message();
+        message.setUsername("Mod Update: ${mod_name}");
+        message.setContent("${mod_name} ${mod_version} for Minecraft version ${minecraft_version} has been uploaded pending review!");
+
+        def embed = new Embed();
+        embed.addField('Download:', "${mod_homepage}/files/", false);
+        embed.addField('Change Log:', mod_changelog_url, false);
+        embed.setColor(0xFF8000);
+        message.addEmbed(embed);
+
+        webhook.sendMessage(message);
     }
-    repositories {
-        maven {
-            url "file://" + System.getenv("local_maven")
-        }
+
+    catch (IOException e) {
+        println 'Failed to push to the Discord webhook.'
     }
 }

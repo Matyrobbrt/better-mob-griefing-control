@@ -1,28 +1,12 @@
 pluginManagement {
     repositories {
+        gradlePluginPortal()
         maven {
-            name = 'Sponge'
-            url = 'https://repo.spongepowered.org/repository/maven-public/'
-        }
-
-        maven {
-            name = 'Quilt (Release)'
-            url = 'https://maven.quiltmc.org/repository/release'
-        }
-
-        maven {
-            name = 'Quilt (Snapshot)'
-            url = 'https://maven.quiltmc.org/repository/snapshot'
-        }
-
-        maven {
-            name = 'Cotton'
-            url = 'https://server.bbkr.space/artifactory/libs-release/'
+            name = 'Minecraft Forge Maven'
+            url = 'https://maven.minecraftforge.net/'
         }
 
         mavenCentral()
         gradlePluginPortal()
     }
 }
-
-rootProject.name = 'bettermobfriefingcontrol'

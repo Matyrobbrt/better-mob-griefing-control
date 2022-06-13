@@ -1,5 +1,5 @@
 ${name} - ${source}
-Copyright (C) 2016-${year} <KiriCattus - tophatcat.dev>
+Copyright (C) 2016-${year} <${author}>
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
