@@ -1,6 +1,6 @@
 /*
  * Better Mob Griefing Control - https://github.com/tophatcats-mods/better-mob-griefing-control
- * Copyright (C) 2016-2022 <KiriCattus - tophatcat.dev>
+ * Copyright (C) 2016-2022 <KiriCattus>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
  */
 package dev.tophatcat.bettermobgriefingcontrol;
 
+import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.EnderMan;
 import net.minecraft.world.entity.monster.Ghast;
@@ -52,6 +53,13 @@ public class BetterGriefingEvents {
         }
     }
 
+    private static void onWitherGrief(EntityMobGriefingEvent event, WitherBoss entity) {
+        if (!event.getEntity().getLevel().getGameRules().getBoolean(
+            BetterMobGriefingControl.DO_WITHER_BLOCK_DAMAGE)) {
+            event.setResult(Event.Result.DENY);
+        }
+    }
+
     @SubscribeEvent
     public static void onGriefing(EntityMobGriefingEvent event) {
         var entity = event.getEntity();
@@ -61,6 +69,8 @@ public class BetterGriefingEvents {
             onCreeperGrief(event, creeper);
         } else if (entity instanceof Ghast ghast) {
             onGhastGrief(event, ghast);
+        } else if (entity instanceof WitherBoss wither) {
+            onWitherGrief(event, wither);
         }
     }
 }
