@@ -22,7 +22,10 @@ package dev.tophatcat.bettermobgriefingcontrol;
 
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.IExtensionPoint;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.NetworkConstants;
 
 @Mod(BetterMobGriefingControl.MOD_ID)
 public class BetterMobGriefingControl {
@@ -31,6 +34,8 @@ public class BetterMobGriefingControl {
 
     public BetterMobGriefingControl() {
         MinecraftForge.EVENT_BUS.register(this);
+        ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class,
+            () -> new IExtensionPoint.DisplayTest(() -> NetworkConstants.IGNORESERVERONLY, (a, b) -> true));
     }
 
     public static final GameRules.Key<GameRules.BooleanValue>
