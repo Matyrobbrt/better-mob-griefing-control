@@ -18,9 +18,9 @@
  * USA
  * https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  */
-package dev.tophatcat.bettermobgriefingcontrol.mixin;
+package com.matyrobbrt.bettermobgriefingcontrol.mixin;
 
-import dev.tophatcat.bettermobgriefingcontrol.BetterMobGriefingControl;
+import com.matyrobbrt.bettermobgriefingcontrol.BetterMobGriefingControl;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RespawnAnchorBlock;

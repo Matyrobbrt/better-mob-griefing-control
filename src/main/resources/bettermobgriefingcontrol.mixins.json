@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "dev.tophatcat.bettermobgriefingcontrol.mixin",
+  "package": "com.matyrobbrt.bettermobgriefingcontrol.mixin",
   "compatibilityLevel": "JAVA_17",
   "refmap": "bettermobgriefingcontrol.refmap.json",
   "mixins": [

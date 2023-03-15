@@ -18,7 +18,7 @@
  * USA
  * https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
  */
-package dev.tophatcat.bettermobgriefingcontrol;
+package com.matyrobbrt.bettermobgriefingcontrol;
 
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.common.MinecraftForge;
