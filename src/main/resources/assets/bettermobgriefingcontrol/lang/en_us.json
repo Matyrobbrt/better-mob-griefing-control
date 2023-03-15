@@ -1,0 +1,8 @@
+{
+  "gamerule.doGhastBlockDamage": "Ghast griefing",
+  "gamerule.doCreeperBlockDamage": "Creeper griefing",
+  "gamerule.letEndermenMoveBlocks": "Enderman griefing",
+  "gamerule.doWitherBlockDamage": "Wither griefing",
+  "gamerule.doRespawnAnchorExplosion": "Anchor block explosions",
+  "gamerule.doBedExplosion": "Bed explosions"
+}

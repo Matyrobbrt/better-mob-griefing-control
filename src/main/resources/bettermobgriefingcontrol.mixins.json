@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "dev.tophatcat.bettermobgriefingcontrol.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "bettermobgriefingcontrol.refmap.json",
+  "mixins": [
+    "RespawnAnchorMixin",
+    "BedMixin"
+  ],
+  "minVersion": "0.8"
+}

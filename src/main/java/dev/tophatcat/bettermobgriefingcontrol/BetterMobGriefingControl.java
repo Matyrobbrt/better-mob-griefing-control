@@ -37,9 +37,16 @@ public class BetterMobGriefingControl {
         DO_GHAST_BLOCK_DAMAGE = registerGameRule("doGhastBlockDamage"),
         DO_CREEPER_BLOCK_DAMAGE = registerGameRule("doCreeperBlockDamage"),
         ENDERMEN_MOVE_BLOCKS = registerGameRule("letEndermenMoveBlocks"),
-        DO_WITHER_BLOCK_DAMAGE = registerGameRule("doWitherBlockDamage");
+        DO_WITHER_BLOCK_DAMAGE = registerGameRule("doWitherBlockDamage"),
+
+        RESPAWN_ANCHOR_EXPLOSION = registerGameRule("doRespawnAnchorExplosion", GameRules.Category.PLAYER),
+        BED_EXPLOSION = registerGameRule("doBedExplosion", GameRules.Category.PLAYER);
 
     private static GameRules.Key<GameRules.BooleanValue> registerGameRule(String name) {
-        return GameRules.register(name, GameRules.Category.MOBS, GameRules.BooleanValue.create(true));
+        return registerGameRule(name, GameRules.Category.MOBS);
+    }
+
+    private static GameRules.Key<GameRules.BooleanValue> registerGameRule(String name, GameRules.Category category) {
+        return GameRules.register(name, category, GameRules.BooleanValue.create(true));
     }
 }
