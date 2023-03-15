@@ -1,0 +1,1 @@
+- Add respawn anchor and bed explosion gamerules
