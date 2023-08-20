@@ -1,6 +1,6 @@
 /*
- * Better Mob Griefing Control - https://github.com/tophatcats-mods/better-mob-griefing-control
- * Copyright (C) 2016-2023 <KiriCattus>
+ * Better Mob Griefing Control - https://github.com/Matyrobbrt/better-mob-griefing-control
+ * Copyright (C) 2016-2023 <Matyrobbrt>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -1,6 +1,6 @@
 /*
- * Better Mob Griefing Control - https://github.com/tophatcats-mods/better-mob-griefing-control
- * Copyright (C) 2016-2023 <KiriCattus>
+ * Better Mob Griefing Control - https://github.com/Matyrobbrt/better-mob-griefing-control
+ * Copyright (C) 2016-2023 <Matyrobbrt>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,28 +33,28 @@ import net.minecraftforge.fml.common.Mod;
 public class BetterGriefingEvents {
 
     private static void onEndermanGrief(EntityMobGriefingEvent event, EnderMan entity) {
-        if (!event.getEntity().getLevel().getGameRules().getBoolean(
+        if (!event.getEntity().level().getGameRules().getBoolean(
             BetterMobGriefingControl.ENDERMEN_MOVE_BLOCKS)) {
             event.setResult(Event.Result.DENY);
         }
     }
 
     private static void onCreeperGrief(EntityMobGriefingEvent event, Creeper creeper) {
-        if (!event.getEntity().getLevel().getGameRules().getBoolean(
+        if (!event.getEntity().level().getGameRules().getBoolean(
             BetterMobGriefingControl.DO_CREEPER_BLOCK_DAMAGE)) {
             event.setResult(Event.Result.DENY);
         }
     }
 
     private static void onGhastGrief(EntityMobGriefingEvent event, Ghast entity) {
-        if (event.getEntity().getLevel().getGameRules().getBoolean(
+        if (event.getEntity().level().getGameRules().getBoolean(
             BetterMobGriefingControl.DO_GHAST_BLOCK_DAMAGE)) {
             event.setResult(Event.Result.DENY);
         }
     }
 
     private static void onWitherGrief(EntityMobGriefingEvent event, WitherBoss entity) {
-        if (!event.getEntity().getLevel().getGameRules().getBoolean(
+        if (!event.getEntity().level().getGameRules().getBoolean(
             BetterMobGriefingControl.DO_WITHER_BLOCK_DAMAGE)) {
             event.setResult(Event.Result.DENY);
         }
